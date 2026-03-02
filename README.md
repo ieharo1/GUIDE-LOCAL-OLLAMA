@@ -1,222 +1,128 @@
-# Ollama Local LLM Guide 🚀
+﻿# Ollama Local Professional Guide
+[![Docker Ready](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Ollama](https://img.shields.io/badge/Ollama-Local%20LLM-black)](https://ollama.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Language: English](https://img.shields.io/badge/Language-English-blue)](#)
+[![Status: Production Ready](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)](#)
 
-Advanced technical guide to run Large Language Models (LLMs) 100% locally using Ollama.
+A practical guide to run local LLMs with Ollama using Docker, designed for portfolio-ready engineering and automation workflows.
 
-This project is designed for professionals who want to:
+## Goals
 
-- Run AI without external APIs
-- Reduce costs
-- Protect sensitive data
-- Integrate LLMs into enterprise systems
-- Automate internal workflows
+- Run open-source models without external APIs.
+- Keep sensitive data inside local infrastructure.
+- Standardize deployment with Docker Compose.
+- Integrate cleanly with scripts, backends, and n8n.
 
----
+## Use Cases
 
-## 📌 What is Ollama?
+- Internal documentation assistant.
+- Offline technical Q&A.
+- Log analysis and ticket triage.
+- Local RAG and agent prototypes.
 
-Ollama is a tool that allows you to run Large Language Models locally on your machine without relying on external cloud services.
+## Stack
 
-Official website:
-https://ollama.com
+- Ollama
+- Docker / Docker Compose
+- Local REST API at `http://localhost:11434`
 
-Supported models include:
+## Project Structure
 
-- llama3
-- mistral
-- codellama
-- phi
-- gemma
+```text
+.
+├── docker-compose.yml
+├── .env.example
+└── README.md
+```
 
-All running on local CPU or GPU.
+## Requirements
 
----
+- Docker Desktop or Docker Engine + Compose
+- Recommended: 16 GB RAM minimum
+- Optional: NVIDIA GPU + NVIDIA Container Toolkit
 
-## 🎯 What is it for?
+## 1) Configure port
 
-- Internal chatbots
-- Technical assistants
-- Code generation
-- Automation with n8n
-- Document processing
-- Data analysis
-- RAG systems
-- Testing open-source models
-- Air-gapped environments
+```bash
+cp .env.example .env
+```
 
----
+Update if needed:
 
-## 🏗 Basic Architecture
+```env
+OLLAMA_PORT=11434
+```
 
-Application (Backend / n8n / Python Script)
-↓
-Local REST API
-↓
-Ollama Engine
-↓
-Downloaded LLM model
+## 2) Start Ollama (CPU)
 
+```bash
+docker compose up -d ollama
+```
 
-Ollama runs on:
+Check logs:
 
-http://localhost:11434
+```bash
+docker compose logs -f ollama
+```
 
----
+## 3) Start Ollama (optional GPU profile)
 
-## 💻 Requirements
+```bash
+docker compose --profile gpu up -d ollama-gpu
+```
 
-### Minimum
-- 16 GB RAM
-- Modern CPU
+Use this only when NVIDIA runtime is properly configured.
 
-### Recommended
-- 32 GB RAM
-- NVIDIA GPU (CUDA)
-- 50GB free storage
+## 4) Pull models inside the container
 
----
+```bash
+docker compose exec ollama ollama pull llama3
+```
 
-## 🛠 Installation
+If using GPU service:
 
-### Windows
+```bash
+docker compose exec ollama-gpu ollama pull llama3
+```
 
-Download:
-https://ollama.com/download
+## 5) Test generation via API
 
-Verify:
+```bash
+curl http://localhost:11434/api/generate \
+  -d '{"model":"llama3","prompt":"Explain hexagonal architecture","stream":false}'
+```
 
-ollama --version
+## 6) Python integration
 
-
----
-
-### Linux
-
-curl -fsSL https://ollama.com/install.sh
-| sh
-
-
----
-
-### Mac
-
-brew install ollama
-
-
----
-
-## 📥 Download a Model
-
-Example:
-
-ollama pull llama3
-
-
-Run:
-
-ollama run llama3
-
-
----
-
-## 🌐 REST API Usage
-
-curl http://localhost:11434/api/generate
--d '{
-"model": "llama3",
-"prompt": "Explain scalable architecture"
-}'
-
-
----
-
-## 🐍 Python Integration
-
+```python
 import requests
 
-url = "http://localhost:11434/api/generate
-"
-
+url = "http://localhost:11434/api/generate"
 payload = {
-"model": "llama3",
-"prompt": "Generate a technical summary about microservices",
-"stream": False
+    "model": "llama3",
+    "prompt": "Summarize microservices advantages",
+    "stream": False,
 }
 
-response = requests.post(url, json=payload)
-
+response = requests.post(url, json=payload, timeout=120)
+response.raise_for_status()
 print(response.json()["response"])
+```
 
+## Security
 
----
+- Do not expose `11434` publicly without auth and reverse proxy.
+- Isolate network in enterprise environments.
+- Add rate limiting when serving multiple clients.
 
-## 🔐 Security
+## Troubleshooting
 
-- Run behind firewall
-- Do not expose port 11434 publicly
-- Use reverse proxy with authentication
-- Implement rate limiting
+- Container not responding: inspect `docker compose logs`.
+- Model missing: run `ollama pull <model>`.
+- Low performance: use quantized models (`q4`, `q8`) or enable GPU.
 
----
+## License
 
-## 📊 Recommended Models
+MIT
 
-| Model     | Best For |
-|------------|----------|
-| llama3     | General tasks |
-| mistral    | Lightweight & fast |
-| codellama  | Code generation |
-| phi        | Low resource environments |
-| gemma      | Lightweight alternative |
-
----
-
-## 🧠 Enterprise Use Cases
-
-- Internal documentation assistant
-- Automated report generation
-- Database query assistant
-- Ticket classification
-- Log analysis
-
----
-
-## 🐳 Docker
-
-docker run -d -p 11434:11434 ollama/ollama
-
-
----
-
-## 🛡 Advantages vs External APIs
-
-- Zero token cost
-- Full data privacy
-- No rate limits
-- Complete model control
-
----
-
-## 🤝 Contributions
-
-Pull requests welcome.
-If this project adds value, consider giving it a ⭐
-
----
-
-## 📄 Licencia
-
-MIT — contribuciones bienvenidas 🚀
-
----
-
-## 💻 Creado Por
-
-🧑‍💻 Isaac Haro
-
-Ingeniero en Sistemas · Full Stack · Automatización · Data
-
-Isaac Esteban Haro Torres
-- 📧 zackharo1@gmail.com
-- 📱 098805517
-- 💻 [GitHub](https://github.com/ieharo1)
-- 🌐 [Portafolio](https://ieharo1.github.io/portafolio-isaac.haro/)
